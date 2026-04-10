@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>暗黑戰棋 — 從地獄打到天界的 3D 戰棋 RPG</title>
+  <meta name="description" content="暗黑戰棋是一款暗黑風 3D 戰棋 RPG，30 章史詩劇情、20+ 角色陣容、回合制策略對戰。免費下載，立即暢玩。">
+  <link rel="icon" href="icon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ═══ RESET ═══ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans TC', 'Inter', -apple-system, sans-serif;
+      color: #ccd0dd;
+      background: #060a1a;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* ═══ NAVIGATION ═══ */
+    nav {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+      background: rgba(8,6,15,0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      transition: all 0.3s ease;
+    }
+    nav.scrolled {
+      background: rgba(8,6,15,0.95);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 72px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 14px;
+    }
+    .nav-logo-icon { font-size: 28px; }
+    .nav-logo-text {
+      font-size: 1.15rem; font-weight: 800; color: #fff;
+      letter-spacing: -0.3px;
+    }
+    .nav-logo-sub {
+      font-size: 0.7rem; color: #60a5fa; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-left: -2px;
+    }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a {
+      font-size: 14px; font-weight: 500; color: #8890a4;
+      transition: color 0.2s ease;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 2px; background: #3b82f6;
+      transition: width 0.3s ease;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      background: linear-gradient(135deg, #2563eb, #1e40af) !important;
+      color: #fff !important;
+      padding: 10px 22px; border-radius: 8px; font-weight: 700 !important;
+      font-size: 13px !important;
+      transition: transform 0.2s, box-shadow 0.2s !important;
+      letter-spacing: 0.5px;
+    }
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(37,99,235,0.5);
+    }
+    .nav-cta::after { display: none !important; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; }
+    .hamburger span { width: 24px; height: 2px; background: #fff; transition: 0.3s; border-radius: 2px; }
+
+    /* ═══ HERO ═══ */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 120px 24px 80px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(20,40,100,0.5) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 80%, rgba(15,30,80,0.4) 0%, transparent 50%),
+                  #060a1a;
+      position: relative; overflow: hidden;
+    }
+    .hero-particles {
+      position: absolute; inset: 0; overflow: hidden;
+    }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: radial-gradient(circle, rgba(50,100,255,0.25), transparent 70%);
+      animation: floatParticle linear infinite;
+    }
+    .particle:nth-child(1) { width: 300px; height: 300px; left: 10%; top: 20%; animation-duration: 20s; }
+    .particle:nth-child(2) { width: 200px; height: 200px; right: 15%; top: 30%; animation-duration: 16s; animation-delay: -4s; }
+    .particle:nth-child(3) { width: 150px; height: 150px; left: 50%; bottom: 20%; animation-duration: 22s; animation-delay: -8s; }
+    @keyframes floatParticle {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+      25% { transform: translate(30px, -40px) scale(1.1); opacity: 0.5; }
+      50% { transform: translate(-20px, 20px) scale(0.9); opacity: 0.2; }
+      75% { transform: translate(10px, -10px) scale(1.05); opacity: 0.4; }
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(50,100,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(50,100,255,0.04) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(37,99,235,0.1); border: 1px solid rgba(37,99,235,0.2);
+      border-radius: 100px; padding: 8px 20px;
+      font-size: 13px; font-weight: 600; color: #60a5fa;
+      margin-bottom: 32px; letter-spacing: 1px;
+    }
+    .hero-badge::before {
+      content: ''; width: 8px; height: 8px;
+      background: #3b82f6; border-radius: 50%;
+      box-shadow: 0 0 8px #3b82f6;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.8); }
+    }
+    .hero-title {
+      font-size: clamp(42px, 8vw, 80px); font-weight: 900;
+      letter-spacing: -2px; line-height: 1.05;
+      margin-bottom: 8px; color: #fff;
+    }
+    .hero-title .red {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 30px rgba(30,80,220,0.3));
+    }
+    .hero-subtitle {
+      font-size: clamp(14px, 2vw, 18px); color: #6a7088;
+      max-width: 560px; margin: 0 auto 40px;
+      font-weight: 300; line-height: 1.8;
+    }
+    .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-fire {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      color: #fff; padding: 16px 36px;
+      border-radius: 12px; font-size: 16px; font-weight: 700;
+      transition: all 0.3s; position: relative; overflow: hidden;
+    }
+    .btn-fire::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.6s;
+    }
+    .btn-fire:hover::before { transform: translateX(100%); }
+    .btn-fire:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(37,99,235,0.5); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.05); color: #ccd0dd;
+      padding: 16px 36px; border-radius: 12px;
+      font-size: 16px; font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s;
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
+    }
+    .btn-google-play {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: #fff; color: #000; padding: 14px 28px;
+      border-radius: 12px; font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-google-play:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,255,255,0.15);
+    }
+    .btn-google-play .gp-text {
+      display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2;
+    }
+    .btn-google-play .gp-small { font-size: 11px; font-weight: 400; opacity: 0.6; }
+    .btn-google-play .gp-big { font-size: 16px; font-weight: 700; }
+
+    /* ═══ SECTION COMMON ═══ */
+    section { padding: 120px 0; }
+    .section-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 700; color: #60a5fa;
+      text-transform: uppercase; letter-spacing: 3px;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(32px, 5vw, 48px); font-weight: 900;
+      letter-spacing: -1px; margin-bottom: 16px; color: #fff;
+    }
+    .section-desc {
+      font-size: 17px; color: #6a7088; max-width: 640px;
+      line-height: 1.8; font-weight: 300;
+    }
+
+    /* ═══ GAME SHOWCASE ═══ */
+    .game-section {
+      background: linear-gradient(180deg, #060a1a 0%, #0a1228 50%, #060a1a 100%);
+    }
+    .game-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 64px; align-items: center; margin-top: 64px;
+    }
+    .game-visual {
+      position: relative; border-radius: 24px; overflow: hidden;
+      background: linear-gradient(135deg, #0c1535 0%, #142040 50%, #08101f 100%);
+      aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(50,100,255,0.15);
+    }
+    .game-visual::before {
+      content: ''; position: absolute; inset: -1px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(50,100,255,0.3), transparent 40%, transparent 60%, rgba(50,100,255,0.2));
+      z-index: -1;
+    }
+    .game-visual-inner { text-align: center; padding: 40px; }
+    .game-visual .game-icon { font-size: 80px; margin-bottom: 16px; }
+    .game-visual .game-name {
+      font-size: 32px; font-weight: 900; color: #3b82f6;
+      text-shadow: 0 0 40px rgba(30,80,220,0.5), 0 0 80px rgba(30,80,220,0.2);
+      letter-spacing: 4px;
+    }
+    .game-visual .game-engine {
+      font-size: 13px; color: #555; margin-top: 12px;
+      letter-spacing: 2px; text-transform: uppercase;
+    }
+    .game-info h3 {
+      font-size: 26px; font-weight: 800; margin-bottom: 24px; color: #fff;
+    }
+    .game-features { list-style: none; }
+    .game-features li {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 16px 0; font-size: 15px; color: #8890a4;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .game-features li:last-child { border-bottom: none; }
+    .feat-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(50,100,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .feat-text strong { color: #fff; }
+    .game-download { margin-top: 32px; }
+
+    /* ═══ STATS ═══ */
+    .stats-section {
+      background: linear-gradient(135deg, #0a1228 0%, #0e1a30 100%);
+      padding: 80px 0;
+      border-top: 1px solid rgba(50,100,255,0.08);
+      border-bottom: 1px solid rgba(50,100,255,0.08);
+    }
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px;
+      text-align: center;
+    }
+    .stat-item .stat-number {
+      font-size: 52px; font-weight: 900;
+      background: linear-gradient(135deg, #60a5fa, #ff8866);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-item .stat-label {
+      font-size: 13px; color: #555; margin-top: 8px;
+      font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+    }
+
+    /* ═══ CHARACTERS ═══ */
+    .characters-section {
+      background: radial-gradient(ellipse at 50% 50%, rgba(30,10,50,0.4) 0%, transparent 60%),
+                  #060a1a;
+    }
+    .char-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 16px; margin-top: 56px;
+    }
+    .char-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px; padding: 24px 16px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative; overflow: hidden;
+    }
+    .char-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 60%, rgba(50,100,255,0.05) 100%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .char-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(50,100,255,0.2);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+    .char-card:hover::before { opacity: 1; }
+    .char-icon { font-size: 40px; margin-bottom: 10px; position: relative; z-index: 1; }
+    .char-name { font-size: 14px; font-weight: 700; color: #fff; position: relative; z-index: 1; }
+    .char-class { font-size: 11px; color: #666; margin-top: 4px; position: relative; z-index: 1; }
+    .char-rarity {
+      display: inline-block; font-size: 10px; font-weight: 800;
+      padding: 3px 10px; border-radius: 20px; margin-top: 10px;
+      letter-spacing: 1px; position: relative; z-index: 1;
+    }
+    .rar-N { background: rgba(255,255,255,0.08); color: #888; }
+    .rar-R { background: rgba(37,99,235,0.15); color: #60a5fa; }
+    .rar-SR { background: rgba(124,58,237,0.15); color: #a78bfa; }
+    .rar-SSR { background: rgba(255,170,0,0.15); color: #fbbf24; }
+
+    /* ═══ STORY ═══ */
+    .story-section {
+      background: linear-gradient(180deg, #060a1a 0%, #0a1228 100%);
+    }
+    .story-scroll {
+      display: flex; gap: 20px; overflow-x: auto;
+      padding: 56px 0 24px; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .story-scroll::-webkit-scrollbar { height: 4px; }
+    .story-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 2px; }
+    .story-scroll::-webkit-scrollbar-thumb { background: rgba(50,100,255,0.3); border-radius: 2px; }
+    .story-card {
+      flex: 0 0 300px; scroll-snap-align: start;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px; padding: 32px 28px;
+      transition: all 0.3s ease;
+      position: relative; overflow: hidden;
+    }
+    .story-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; background: linear-gradient(90deg, #3b82f6, #3b82f6);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .story-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(50,100,255,0.15);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+    }
+    .story-card:hover::after { opacity: 1; }
+    .story-card .ch-num {
+      font-size: 11px; font-weight: 800; color: #60a5fa;
+      text-transform: uppercase; letter-spacing: 2px;
+    }
+    .story-card .ch-icon { font-size: 40px; margin: 16px 0; }
+    .story-card .ch-title {
+      font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 12px;
+    }
+    .story-card .ch-desc {
+      font-size: 14px; color: #6a7088; line-height: 1.8;
+    }
+    .story-hint {
+      text-align: center; margin-top: 16px;
+      font-size: 12px; color: #444; letter-spacing: 1px;
+    }
+
+    /* ═══ DOWNLOAD ═══ */
+    .download-section {
+      background: radial-gradient(ellipse at 50% 50%, rgba(60,10,10,0.3) 0%, transparent 60%),
+                  #060a1a;
+      text-align: center; padding: 120px 0;
+      position: relative;
+    }
+    .download-section::before {
+      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+    }
+    .download-content { position: relative; z-index: 1; }
+    .download-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 48px; }
+
+    /* ═══ FOOTER ═══ */
+    footer {
+      background: #040a14; color: #444; text-align: center;
+      padding: 40px 24px; font-size: 13px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+    }
+    .footer-studio {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 16px;
+    }
+    .footer-studio img { height: 32px; opacity: 0.4; }
+    .footer-studio span { color: #555; font-weight: 600; }
+    .footer-links {
+      display: flex; gap: 24px; justify-content: center; margin-bottom: 16px;
+    }
+    .footer-links a { color: #444; font-size: 13px; transition: color 0.2s; }
+    .footer-links a:hover { color: #60a5fa; }
+
+    /* ═══ FADE IN ═══ */
+    .fade-up {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 900px) {
+      .game-grid { grid-template-columns: 1fr; gap: 40px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .char-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: absolute; top: 72px; left: 0; width: 100%;
+        background: rgba(8,6,15,0.98); padding: 24px; gap: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+      }
+      .hamburger { display: flex; }
+      .hero { min-height: 90vh; padding: 100px 20px 60px; }
+      section { padding: 80px 0; }
+      .stat-item .stat-number { font-size: 40px; }
+      .story-card { flex: 0 0 260px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ NAVIGATION ═══ -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="#hero" class="nav-logo">
+      <span class="nav-logo-icon">⚔️</span>
+      <div>
+        <div class="nav-logo-text">暗黑戰棋</div>
+        <div class="nav-logo-sub">DARK CHESS RPG</div>
+      </div>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#game">遊戲介紹</a>
+      <a href="#characters">角色</a>
+      <a href="#story">故事</a>
+      <a href="#download">下載</a>
+      <a href="https://play.google.com/store/apps/details?id=com.pencilstudio.darkchess" target="_blank" rel="noopener" class="nav-cta">⬇️ 立即下載</a>
+    </div>
+    <div class="hamburger" id="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="hero">
+  <div class="hero-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+  <div class="hero-grid"></div>
+  <div class="hero-content fade-up">
+    <div class="hero-badge">已上架 Google Play</div>
+    <h1 class="hero-title">
+      <span class="red">暗黑</span>戰棋
+    </h1>
+    <p class="hero-subtitle">從地獄打到天界的暗黑風 3D 戰棋 RPG。<br>30 章史詩劇情、20+ 角色陣容、回合制策略對戰。</p>
+    <div class="hero-buttons">
+      <a href="https://play.google.com/store/apps/details?id=com.pencilstudio.darkchess" target="_blank" rel="noopener" class="btn-google-play">
+        <span class="gp-icon" style="font-size:24px;">▶️</span>
+        <span class="gp-text">
+          <span class="gp-small">GET IT ON</span>
+          <span class="gp-big">Google Play</span>
+        </span>
+      </a>
+      <a href="#game" class="btn-ghost">🎮 了解更多</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ GAME SHOWCASE ═══ -->
+<section class="game-section" id="game">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">🎮 遊戲介紹</div>
+      <h2 class="section-title">回合制戰棋 RPG</h2>
+      <p class="section-desc">策略與劇情並重。在棋盤上排兵佈陣，體驗從人間到天界的宏大冒險。</p>
+    </div>
+    <div class="game-grid fade-up">
+      <div class="game-visual">
+        <div class="game-visual-inner">
+          <div class="game-icon">⚔️</div>
+          <div class="game-name">暗黑戰棋</div>
+          <div class="game-engine">Powered by Babylon.js</div>
+        </div>
+      </div>
+      <div class="game-info">
+        <h3>為什麼選擇暗黑戰棋？</h3>
+        <ul class="game-features">
+          <li>
+            <div class="feat-icon">📖</div>
+            <div class="feat-text"><strong>30 章史詩劇情</strong> — 從人間村莊到地獄深淵，再到天界王座，揭開創世天帝的最終真相</div>
+          </li>
+          <li>
+            <div class="feat-icon">👥</div>
+            <div class="feat-text"><strong>20+ 角色職業</strong> — 戰士、法師、刺客、龍騎士、大天使……四個稀有度，每種獨特技能組</div>
+          </li>
+          <li>
+            <div class="feat-icon">🎲</div>
+            <div class="feat-text"><strong>抽卡 & 養成</strong> — Gacha 系統收集角色，裝備強化、符文搭配、難度塔挑戰</div>
+          </li>
+          <li>
+            <div class="feat-icon">☁️</div>
+            <div class="feat-text"><strong>雲端存檔</strong> — Firebase 整合，跨裝置同步進度，隨時隨地繼續冒險</div>
+          </li>
+          <li>
+            <div class="feat-icon">📱</div>
+            <div class="feat-text"><strong>手機即玩</strong> — 下載即開，無需額外裝置，隨時隨地暢玩</div>
+          </li>
+        </ul>
+        <div class="game-download">
+          <a href="https://play.google.com/store/apps/details?id=com.pencilstudio.darkchess" target="_blank" rel="noopener" class="btn-google-play">
+            <span style="font-size:24px;">▶️</span>
+            <span class="gp-text">
+              <span class="gp-small">GET IT ON</span>
+              <span class="gp-big">Google Play</span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS ═══ -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid fade-up">
+      <div class="stat-item">
+        <div class="stat-number">30</div>
+        <div class="stat-label">故事章節</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">20+</div>
+        <div class="stat-label">角色職業</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">15+</div>
+        <div class="stat-label">BOSS 戰役</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">3D</div>
+        <div class="stat-label">戰棋場景</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CHARACTERS ═══ -->
+<section class="characters-section" id="characters">
+  <div class="container">
+    <div class="fade-up" style="text-align:center;">
+      <div class="section-label">👥 角色陣容</div>
+      <h2 class="section-title">收集你的戰鬥小隊</h2>
+      <p class="section-desc" style="margin:0 auto;">從基礎戰士到傳說級 SSR 角色，每個英雄都有獨特的技能與被動天賦。</p>
+    </div>
+    <div class="char-grid fade-up">
+      <div class="char-card">
+        <div class="char-icon">⚔️</div>
+        <div class="char-name">戰士</div>
+        <div class="char-class">近戰輸出</div>
+        <span class="char-rarity rar-N">N</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">🏹</div>
+        <div class="char-name">弓箭手</div>
+        <div class="char-class">遠程輸出</div>
+        <span class="char-rarity rar-N">N</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">🔮</div>
+        <div class="char-name">法師</div>
+        <div class="char-class">魔法 AOE</div>
+        <span class="char-rarity rar-N">N</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">🛡️</div>
+        <div class="char-name">騎士</div>
+        <div class="char-class">坦克防禦</div>
+        <span class="char-rarity rar-R">R</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">🗡️</div>
+        <div class="char-name">刺客</div>
+        <div class="char-class">暴擊暗殺</div>
+        <span class="char-rarity rar-R">R</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">✝️</div>
+        <div class="char-name">牧師</div>
+        <div class="char-class">治療輔助</div>
+        <span class="char-rarity rar-R">R</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">🐉</div>
+        <div class="char-name">龍騎士</div>
+        <div class="char-class">龍炎 AOE</div>
+        <span class="char-rarity rar-SR">SR</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">🥷</div>
+        <div class="char-name">忍者</div>
+        <div class="char-class">高速暗殺</div>
+        <span class="char-rarity rar-SR">SR</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">💀</div>
+        <div class="char-name">死亡騎士</div>
+        <div class="char-class">不死復活</div>
+        <span class="char-rarity rar-SSR">SSR</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">😈</div>
+        <div class="char-name">魔君</div>
+        <div class="char-class">擊殺連動</div>
+        <span class="char-rarity rar-SSR">SSR</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">👼</div>
+        <div class="char-name">大天使</div>
+        <div class="char-class">光環減傷</div>
+        <span class="char-rarity rar-SSR">SSR</span>
+      </div>
+      <div class="char-card">
+        <div class="char-icon">⚡</div>
+        <div class="char-name">雷神</div>
+        <div class="char-class">連鎖閃電</div>
+        <span class="char-rarity rar-SSR">SSR</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STORY ═══ -->
+<section class="story-section" id="story">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">📖 史詩劇情</div>
+      <h2 class="section-title">三大篇章，從人間到天界</h2>
+      <p class="section-desc">30 章故事跨越三大世界，揭開從遠古封印到創世天帝的最終真相。</p>
+    </div>
+    <div class="story-scroll fade-up">
+      <div class="story-card">
+        <div class="ch-num">第一篇 · 暗黑篇</div>
+        <div class="ch-icon">⚔️</div>
+        <div class="ch-title">黑暗初現</div>
+        <div class="ch-desc">從村莊的史萊姆異變開始，深入墓穴、惡魔巢穴、龍巢……一步步揭開幕後黑手的真面目，最終對決暗黑龍王。</div>
+      </div>
+      <div class="story-card">
+        <div class="ch-num">第二篇 · 煉獄篇</div>
+        <div class="ch-icon">🔥</div>
+        <div class="ch-title">躍入地獄</div>
+        <div class="ch-desc">龍王倒下，裂縫失控。四位勇者縱身躍入地獄，經歷熔岩深淵、虛空裂隙、冥界之門，面對毀滅世界的「虛無之主」。</div>
+      </div>
+      <div class="story-card">
+        <div class="ch-num">第三篇 · 天界篇</div>
+        <div class="ch-icon">🌟</div>
+        <div class="ch-title">天使的國度</div>
+        <div class="ch-desc">地獄裂縫關閉，天界之橋顯現。闖入天使國度，經歷試煉、競技場、黎明之塔，最終揭開創世天帝要毀滅一切的真相。</div>
+      </div>
+      <div class="story-card">
+        <div class="ch-num">最終章</div>
+        <div class="ch-icon">👑</div>
+        <div class="ch-title">天之巔</div>
+        <div class="ch-desc">天帝降臨。祂創造了世界，現在厭倦了。最終決戰——凡人對抗造物主，為存在的意義而戰。</div>
+      </div>
+    </div>
+    <div class="story-hint fade-up">← 左右滑動查看更多 →</div>
+  </div>
+</section>
+
+<!-- ═══ DOWNLOAD ═══ -->
+<section class="download-section" id="download">
+  <div class="container">
+    <div class="download-content fade-up">
+      <div class="section-label">⬇️ 立即下載</div>
+      <h2 class="section-title">準備好踏上冒險了嗎？</h2>
+      <p class="section-desc" style="margin:0 auto;">免費下載暗黑戰棋，從人間村莊出發，一路打到天界之巔！</p>
+      <div class="download-buttons">
+        <a href="https://play.google.com/store/apps/details?id=com.pencilstudio.darkchess" target="_blank" rel="noopener" class="btn-google-play" style="font-size:16px;">
+          <span style="font-size:28px;">▶️</span>
+          <span class="gp-text">
+            <span class="gp-small">GET IT ON</span>
+            <span class="gp-big">Google Play</span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-studio">
+      <img src="logo.png" alt="Pencil Studio">
+      <span>Pencil Studio</span>
+    </div>
+    <div class="footer-links">
+      <a href="mailto:pencilstudio0722@gmail.com">聯絡我們</a>
+      <a href="https://htmlpreview.github.io/?https://github.com/pencilstudio0722-alt/HKmeet/blob/main/PRIVACY_POLICY.html" target="_blank">私隱政策</a>
+      <a href="https://htmlpreview.github.io/?https://github.com/pencilstudio0722-alt/HKmeet/blob/main/SAFETY_STANDARDS.html" target="_blank">使用條款</a>
+    </div>
+    <p>© 2026 暗黑戰棋 — Pencil Studio. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script>
+  const nav = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('navLinks').classList.remove('open');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
